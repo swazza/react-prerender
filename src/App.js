@@ -1,18 +1,34 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+import { PrerenderedContent } from './PrerenderedContent';
 import Worker from './hello.worker.js';
 
-const worker = new Worker();
-worker.onmessage = function(event) {
-  console.log(event);
-};
-
 class App extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      content: 'Nothing has been prerendered yet'
+    };
+
+    this.worker = new Worker();
+    this.worker.onmessage = function(event) {
+      const { data: content } = event;
+      this.setState({ content });
+    }.bind(this);
+  }
+
   onButtonClick() {
-    worker.postMessage({ a: 1 });
+    this.worker.postMessage({ a: 1 });
   }
 
   render() {
-    return <button onClick={this.onButtonClick.bind(this)}>Get Message</button>;
+    const { content } = this.state;
+    return (
+      <Fragment>
+        <button onClick={this.onButtonClick.bind(this)}>Get Message</button>
+        <PrerenderedContent content={content} />
+      </Fragment>
+    );
   }
 }
 
